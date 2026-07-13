@@ -66,7 +66,7 @@ def build_chart_png(path: Path) -> None:
         edgecolors="#C55A11",
         linewidths=1.0,
         zorder=3,
-        label="Sample 1",
+        label="Lote 1",
     )
     ax.scatter(
         x + offset,
@@ -76,7 +76,7 @@ def build_chart_png(path: Path) -> None:
         edgecolors="#548235",
         linewidths=1.0,
         zorder=3,
-        label="Sample 2",
+        label="Lote 2",
     )
 
     ax.set_axisbelow(True)
@@ -84,6 +84,7 @@ def build_chart_png(path: Path) -> None:
     ax.xaxis.grid(True, which="major", color="#F2F2F2", linestyle="-", linewidth=0.6)
     ax.set_xlim(-0.6, len(products) - 0.4)
     ax.set_ylim(200, 620)
+    ax.set_yticks(np.arange(200, 621, 25))
     ax.set_xticks(x)
     ax.set_xticklabels(products, fontsize=11)
     ax.set_ylabel("Osmolality (mOsm/kg)", fontsize=11)
@@ -107,7 +108,7 @@ def build_chart_png(path: Path) -> None:
             facecolor="#9DC3E6",
             edgecolor="#5B9BD5",
             alpha=0.45,
-            label="Specification range",
+            label="Rango de aceptación",
         ),
         Line2D(
             [0],
@@ -117,7 +118,7 @@ def build_chart_png(path: Path) -> None:
             markerfacecolor="#ED7D31",
             markeredgecolor="#C55A11",
             markersize=8,
-            label="Sample 1",
+            label="Lote 1",
         ),
         Line2D(
             [0],
@@ -127,19 +128,10 @@ def build_chart_png(path: Path) -> None:
             markerfacecolor="#70AD47",
             markeredgecolor="#548235",
             markersize=8,
-            label="Sample 2",
+            label="Lote 2",
         ),
     ]
     ax.legend(handles=legend_handles, loc="upper left", frameon=True, fancybox=False)
-
-    ax.annotate(
-        "DO8: no specification range",
-        xy=(7, 576),
-        xytext=(5.2, 540),
-        fontsize=8,
-        color="#595959",
-        arrowprops=dict(arrowstyle="->", color="#595959", lw=0.8),
-    )
 
     fig.tight_layout()
     fig.savefig(path, bbox_inches="tight")
@@ -189,15 +181,15 @@ def build_workbook(chart_png: Path, path: Path) -> None:
         "Product",
         "Spec Min (mOsm/kg)",
         "Spec Max (mOsm/kg)",
-        "Sample 1 (mOsm/kg)",
-        "Sample 2 (mOsm/kg)",
-        "Sample 1 Status",
-        "Sample 2 Status",
+        "Lote 1 (mOsm/kg)",
+        "Lote 2 (mOsm/kg)",
+        "Lote 1 Status",
+        "Lote 2 Status",
         "Base (hidden)",
         "Range Height",
         "X Index",
-        "Sample 1 Y",
-        "Sample 2 Y",
+        "Lote 1 Y",
+        "Lote 2 Y",
     ]
 
     for col, header in enumerate(headers, start=1):
@@ -250,7 +242,7 @@ def build_workbook(chart_png: Path, path: Path) -> None:
         "Specification range is shown as a shaded band for each product. "
         "DO8 has no specification; only sample markers are displayed."
     )
-    ws["A13"] = "Units: mOsm/kg. Markers: Sample 1 (orange), Sample 2 (green)."
+    ws["A13"] = "Units: mOsm/kg. Markers: Lote 1 (orange), Lote 2 (green)."
     ws.merge_cells("A12:G12")
     ws.merge_cells("A13:G13")
 
@@ -264,6 +256,7 @@ def build_workbook(chart_png: Path, path: Path) -> None:
     bar.x_axis.title = "Product"
     bar.y_axis.scaling.min = 200
     bar.y_axis.scaling.max = 620
+    bar.y_axis.majorUnit = 25
     bar.style = 10
     bar.width = 18
     bar.height = 12
@@ -281,30 +274,24 @@ def build_workbook(chart_png: Path, path: Path) -> None:
     # Visible range shade
     bar.series[1].graphicalProperties.solidFill = "9DC3E6"
     bar.series[1].graphicalProperties.line.solidFill = "5B9BD5"
-    bar.series[1].title = SeriesLabel(v="Specification range")
+    bar.series[1].title = SeriesLabel(v="Rango de aceptación")
 
-    # Scatter markers for both samples
+    # Scatter markers for both lots
     scatter = ScatterChart()
     scatter.style = 10
 
     xvalues = Reference(ws, min_col=10, min_row=2, max_row=9)
-    y1 = Reference(ws, min_col=11, min_row=1, max_row=9)
-    y2 = Reference(ws, min_col=12, min_row=1, max_row=9)
-
-    # Series constructor: Series(values, xvalues, title=...)
-    # When title is a string and values include header row, use titles carefully.
-    # Use values without header + explicit title.
     y1_vals = Reference(ws, min_col=11, min_row=2, max_row=9)
     y2_vals = Reference(ws, min_col=12, min_row=2, max_row=9)
 
-    ser1 = Series(y1_vals, xvalues, title="Sample 1")
+    ser1 = Series(y1_vals, xvalues, title="Lote 1")
     ser1.marker = Marker(symbol="circle", size=7)
     ser1.marker.graphicalProperties.solidFill = "ED7D31"
     ser1.marker.graphicalProperties.line.solidFill = "C55A11"
     ser1.graphicalProperties.line.noFill = True
     scatter.series.append(ser1)
 
-    ser2 = Series(y2_vals, xvalues, title="Sample 2")
+    ser2 = Series(y2_vals, xvalues, title="Lote 2")
     ser2.marker = Marker(symbol="circle", size=7)
     ser2.marker.graphicalProperties.solidFill = "70AD47"
     ser2.marker.graphicalProperties.line.solidFill = "548235"
@@ -320,8 +307,8 @@ def build_workbook(chart_png: Path, path: Path) -> None:
     ws_chart["A1"] = "Osmolality Test Results — Excel-style chart"
     ws_chart["A1"].font = Font(bold=True, size=14, color="1F4E79")
     ws_chart["A2"] = (
-        "X axis: products (DO1–DO8) | Y axis: osmolality (mOsm/kg) | "
-        "Shade: specification range | Circles: Sample 1 & Sample 2"
+        "X axis: products (DO1–DO8) | Y axis: osmolality (mOsm/kg), step 25 | "
+        "Shade: Rango de aceptación | Circles: Lote 1 & Lote 2"
     )
     ws_chart.merge_cells("A2:H2")
     ws_chart.column_dimensions["A"].width = 20

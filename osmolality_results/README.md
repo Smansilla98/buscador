@@ -12,10 +12,11 @@ Archivos en `osmolality_results/`:
 
 - **Eje X:** productos DO1–DO8
 - **Eje Y:** osmolalidad (mOsm/kg)
-- **Banda azul:** rango de especificación de cada producto
-- **Círculos naranjas:** Sample 1
-- **Círculos verdes:** Sample 2
+- **Banda azul:** Rango de aceptación de cada producto
+- **Círculos naranjas:** Lote 1
+- **Círculos verdes:** Lote 2
 - **DO8:** sin especificación (solo se muestran las mediciones)
+- **Eje Y:** rango 200–620 mOsm/kg, divisiones cada 25 unidades
 
 ## Regenerar
 
