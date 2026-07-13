@@ -87,8 +87,8 @@ def build_chart_png(path: Path) -> None:
     ax.set_yticks(np.arange(200, 621, 25))
     ax.set_xticks(x)
     ax.set_xticklabels(products, fontsize=11)
-    ax.set_ylabel("Osmolality (mOsm/kg)", fontsize=11)
-    ax.set_xlabel("Product", fontsize=11)
+    ax.set_ylabel("Osmolalidad (mOsm/kg)", fontsize=11)
+    ax.set_xlabel("Producto", fontsize=11)
     ax.set_title(
         "Osmolality Test Results by Product",
         fontsize=14,
@@ -252,8 +252,8 @@ def build_workbook(chart_png: Path, path: Path) -> None:
     bar.grouping = "stacked"
     bar.overlap = 100
     bar.title = "Osmolality Test Results by Product"
-    bar.y_axis.title = "Osmolality (mOsm/kg)"
-    bar.x_axis.title = "Product"
+    bar.y_axis.title = "Osmolalidad (mOsm/kg)"
+    bar.x_axis.title = "Producto"
     bar.y_axis.scaling.min = 200
     bar.y_axis.scaling.max = 620
     bar.y_axis.majorUnit = 25
