@@ -148,9 +148,16 @@ def build_chart_png(path: Path) -> None:
             label="Lote 2",
         ),
     ]
-    ax.legend(handles=legend_handles, loc="upper left", frameon=True, fancybox=False)
+    ax.legend(
+        handles=legend_handles,
+        loc="center left",
+        bbox_to_anchor=(-0.30, 0.5),
+        borderaxespad=0,
+        frameon=True,
+        fancybox=False,
+    )
 
-    fig.tight_layout()
+    fig.subplots_adjust(left=0.30, right=0.98, top=0.92, bottom=0.10)
     fig.savefig(path, bbox_inches="tight")
     plt.close(fig)
 
