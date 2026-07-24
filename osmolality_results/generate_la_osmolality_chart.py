@@ -127,7 +127,7 @@ def build_chart_png(path: Path) -> None:
     products = [p["product"] for p in PRODUCTS]
     x = np.arange(len(products))
 
-    fig, ax = plt.subplots(figsize=(14, 8.2), dpi=160)
+    fig, ax = plt.subplots(figsize=(14, 8.8), dpi=160)
     fig.patch.set_facecolor("#FFFFFF")
     ax.set_facecolor("#FFFFFF")
 
@@ -189,7 +189,6 @@ def build_chart_png(path: Path) -> None:
     ax.set_xticks(x)
     ax.set_xticklabels(products, fontsize=10)
     ax.set_ylabel("Osmolalidad (mOsm/kg)", fontsize=11)
-    ax.set_xlabel("Producto", fontsize=11, labelpad=28)
     ax.set_title(
         "Osmolality Test Results by Product",
         fontsize=14,
@@ -203,46 +202,26 @@ def build_chart_png(path: Path) -> None:
     ax.spines["left"].set_color("#BFBFBF")
     ax.spines["bottom"].set_color("#BFBFBF")
     ax.tick_params(colors="#595959")
-    ax.tick_params(axis="x", pad=4)
+    ax.tick_params(axis="x", pad=3)
 
-    # Laboratory labels below product ticks (grouped when shared)
-    lab_groups = []
+    # Laboratory names slightly diagonal under each product tick
     for i, p in enumerate(PRODUCTS):
-        lab = p["laboratorio"]
-        if lab_groups and lab_groups[-1]["name"] == lab:
-            lab_groups[-1]["end"] = i
-        else:
-            lab_groups.append({"name": lab, "start": i, "end": i})
-
-    for group in lab_groups:
-        center = (group["start"] + group["end"]) / 2
         ax.text(
-            center,
-            -0.085,
-            group["name"],
+            i,
+            -0.062,
+            p["laboratorio"],
             transform=ax.get_xaxis_transform(),
-            ha="center",
+            ha="right",
             va="top",
-            fontsize=8,
+            rotation=30,
+            rotation_mode="anchor",
+            fontsize=7.5,
             color="#595959",
             clip_on=False,
         )
-        if group["start"] != group["end"]:
-            ax.annotate(
-                "",
-                xy=(group["end"] + 0.35, -0.055),
-                xytext=(group["start"] - 0.35, -0.055),
-                xycoords=("data", "axes fraction"),
-                textcoords=("data", "axes fraction"),
-                arrowprops=dict(
-                    arrowstyle="-",
-                    color="#BFBFBF",
-                    lw=0.9,
-                    shrinkA=0,
-                    shrinkB=0,
-                ),
-                annotation_clip=False,
-            )
+
+    # Axis name below diagonal lab labels, with clear separation
+    ax.set_xlabel("Laboratorio/Producto", fontsize=11, labelpad=58)
 
     legend_handles = [
         mpatches.Patch(
@@ -274,7 +253,7 @@ def build_chart_png(path: Path) -> None:
     ]
     ax.legend(handles=legend_handles, loc="upper right", frameon=True, fancybox=False)
 
-    fig.tight_layout()
+    fig.subplots_adjust(left=0.08, right=0.98, top=0.92, bottom=0.22)
     fig.savefig(path, bbox_inches="tight")
     plt.close(fig)
 
@@ -404,7 +383,7 @@ def build_workbook(chart_png: Path, path: Path) -> None:
     bar.overlap = 100
     bar.title = "Osmolality Test Results by Product"
     bar.y_axis.title = "Osmolalidad (mOsm/kg)"
-    bar.x_axis.title = "Producto"
+    bar.x_axis.title = "Laboratorio/Producto"
     bar.y_axis.scaling.min = Y_MIN
     bar.y_axis.scaling.max = Y_MAX
     bar.y_axis.majorUnit = Y_STEP
