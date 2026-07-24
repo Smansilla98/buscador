@@ -20,6 +20,7 @@ Archivos en `osmolality_results/`:
 - Productos sin especificación: solo se muestran las mediciones
 - Serie DO: eje Y 200–620; DO8 sin especificación
 - Serie LA: eje Y 150–625; LA1/LA5/LA12 sin especificación; LA1 sin Lote 2
+- Serie LA: debajo de cada producto se indica el Laboratorio (A–J)
 
 ## Regenerar
 
