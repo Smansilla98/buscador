@@ -202,26 +202,50 @@ def build_chart_png(path: Path) -> None:
     ax.spines["left"].set_color("#BFBFBF")
     ax.spines["bottom"].set_color("#BFBFBF")
     ax.tick_params(colors="#595959")
-    ax.tick_params(axis="x", pad=3)
+    ax.tick_params(axis="x", pad=4)
 
-    # Laboratory names slightly diagonal under each product tick
+    # Laboratory names horizontal + bold under product ticks (grouped when shared)
+    lab_groups = []
     for i, p in enumerate(PRODUCTS):
+        lab = p["laboratorio"]
+        if lab_groups and lab_groups[-1]["name"] == lab:
+            lab_groups[-1]["end"] = i
+        else:
+            lab_groups.append({"name": lab, "start": i, "end": i})
+
+    for group in lab_groups:
+        center = (group["start"] + group["end"]) / 2
         ax.text(
-            i,
-            -0.062,
-            p["laboratorio"],
+            center,
+            -0.078,
+            group["name"],
             transform=ax.get_xaxis_transform(),
-            ha="right",
+            ha="center",
             va="top",
-            rotation=30,
-            rotation_mode="anchor",
-            fontsize=7.5,
-            color="#595959",
+            fontsize=8,
+            fontweight="bold",
+            color="#404040",
             clip_on=False,
         )
+        if group["start"] != group["end"]:
+            ax.annotate(
+                "",
+                xy=(group["end"] + 0.35, -0.052),
+                xytext=(group["start"] - 0.35, -0.052),
+                xycoords=("data", "axes fraction"),
+                textcoords=("data", "axes fraction"),
+                arrowprops=dict(
+                    arrowstyle="-",
+                    color="#BFBFBF",
+                    lw=0.9,
+                    shrinkA=0,
+                    shrinkB=0,
+                ),
+                annotation_clip=False,
+            )
 
-    # Axis name below diagonal lab labels, with clear separation
-    ax.set_xlabel("Laboratorio/Producto", fontsize=11, labelpad=58)
+    # Axis title below the laboratory line, without overlapping labels
+    ax.set_xlabel("Laboratorio/Producto", fontsize=11, labelpad=36)
 
     legend_handles = [
         mpatches.Patch(
@@ -253,7 +277,7 @@ def build_chart_png(path: Path) -> None:
     ]
     ax.legend(handles=legend_handles, loc="upper right", frameon=True, fancybox=False)
 
-    fig.subplots_adjust(left=0.08, right=0.98, top=0.92, bottom=0.22)
+    fig.subplots_adjust(left=0.08, right=0.98, top=0.92, bottom=0.20)
     fig.savefig(path, bbox_inches="tight")
     plt.close(fig)
 
