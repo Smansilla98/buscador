@@ -23,6 +23,7 @@ Archivos en `osmolality_results/`:
 - Serie DO: estrella = Valor teórico estimado (DO8 = 574; DO9 = 288)
 - Serie LA: eje Y 150–625; LA1/LA5/LA12 sin especificación; LA1 sin Lote 2
 - Serie LA: debajo de cada producto se indica el Laboratorio (A–J)
+- Serie LA: estrella = Valor teórico estimado (LA1/LA5 = 570; LA12 = 302)
 
 ## Regenerar
 

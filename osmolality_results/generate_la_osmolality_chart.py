@@ -30,6 +30,7 @@ PRODUCTS = [
         "spec_max": None,
         "lote_1": 575,
         "lote_2": None,
+        "asterisk": 570,
     },
     {
         "product": "LA2",
@@ -38,6 +39,7 @@ PRODUCTS = [
         "spec_max": 320,
         "lote_1": 308,
         "lote_2": 309,
+        "asterisk": None,
     },
     {
         "product": "LA3",
@@ -46,6 +48,7 @@ PRODUCTS = [
         "spec_max": 320,
         "lote_1": 292,
         "lote_2": 292,
+        "asterisk": None,
     },
     {
         "product": "LA4",
@@ -54,6 +57,7 @@ PRODUCTS = [
         "spec_max": 400,
         "lote_1": 280,
         "lote_2": 280,
+        "asterisk": None,
     },
     {
         "product": "LA5",
@@ -62,6 +66,7 @@ PRODUCTS = [
         "spec_max": None,
         "lote_1": 558,
         "lote_2": 565,
+        "asterisk": 570,
     },
     {
         "product": "LA6",
@@ -70,6 +75,7 @@ PRODUCTS = [
         "spec_max": 340,
         "lote_1": 308,
         "lote_2": 304,
+        "asterisk": None,
     },
     {
         "product": "LA7",
@@ -78,6 +84,7 @@ PRODUCTS = [
         "spec_max": 340,
         "lote_1": 306,
         "lote_2": 308,
+        "asterisk": None,
     },
     {
         "product": "LA8",
@@ -86,6 +93,7 @@ PRODUCTS = [
         "spec_max": 350,
         "lote_1": 281,
         "lote_2": 282,
+        "asterisk": None,
     },
     {
         "product": "LA9",
@@ -94,6 +102,7 @@ PRODUCTS = [
         "spec_max": 320,
         "lote_1": 282,
         "lote_2": 292,
+        "asterisk": None,
     },
     {
         "product": "LA10",
@@ -102,6 +111,7 @@ PRODUCTS = [
         "spec_max": 260,
         "lote_1": 214,
         "lote_2": 212,
+        "asterisk": None,
     },
     {
         "product": "LA11",
@@ -110,6 +120,7 @@ PRODUCTS = [
         "spec_max": 330,
         "lote_1": 305,
         "lote_2": 297,
+        "asterisk": None,
     },
     {
         "product": "LA12",
@@ -118,6 +129,7 @@ PRODUCTS = [
         "spec_max": None,
         "lote_1": 276,
         "lote_2": 280,
+        "asterisk": 302,
     },
 ]
 
@@ -151,6 +163,7 @@ def build_chart_png(path: Path) -> None:
     offset = 0.08
     x1, y1 = [], []
     x2, y2 = [], []
+    xa, ya = [], []
     for i, p in enumerate(PRODUCTS):
         if p["lote_1"] is not None:
             x1.append(i - offset)
@@ -158,6 +171,9 @@ def build_chart_png(path: Path) -> None:
         if p["lote_2"] is not None:
             x2.append(i + offset)
             y2.append(p["lote_2"])
+        if p["asterisk"] is not None:
+            xa.append(i)
+            ya.append(p["asterisk"])
 
     ax.scatter(
         x1,
@@ -178,6 +194,17 @@ def build_chart_png(path: Path) -> None:
         linewidths=1.0,
         zorder=3,
         label="Lote 2",
+    )
+    ax.scatter(
+        xa,
+        ya,
+        s=120,
+        marker="*",
+        facecolors="#000000",
+        edgecolors="#000000",
+        linewidths=0.4,
+        zorder=4,
+        label="Valor teórico estimado",
     )
 
     ax.set_axisbelow(True)
@@ -274,6 +301,16 @@ def build_chart_png(path: Path) -> None:
             markersize=8,
             label="Lote 2",
         ),
+        Line2D(
+            [0],
+            [0],
+            marker="*",
+            color="w",
+            markerfacecolor="#000000",
+            markeredgecolor="#000000",
+            markersize=12,
+            label="Valor teórico estimado",
+        ),
     ]
     ax.legend(handles=legend_handles, loc="upper right", frameon=True, fancybox=False)
 
@@ -303,7 +340,8 @@ def build_workbook(chart_png: Path, path: Path) -> None:
         "Products with a specification range are within limits for available lots."
     )
     ws_sum["A4"] = (
-        "LA1, LA5 and LA12 have no specification range. LA1 has Lote 1 only (no Lote 2)."
+        "LA1, LA5 and LA12 have no specification range. LA1 has Lote 1 only (no Lote 2). "
+        "Valor teórico estimado (*): LA1/LA5 = 570; LA12 = 302."
     )
     ws_sum["A6"] = "Contents"
     ws_sum["A6"].font = Font(bold=True)
@@ -330,6 +368,7 @@ def build_workbook(chart_png: Path, path: Path) -> None:
         "Spec Max (mOsm/kg)",
         "Lote 1 (mOsm/kg)",
         "Lote 2 (mOsm/kg)",
+        "Asterisk (mOsm/kg)",
         "Lote 1 Status",
         "Lote 2 Status",
         "Base (hidden)",
@@ -337,6 +376,7 @@ def build_workbook(chart_png: Path, path: Path) -> None:
         "X Index",
         "Lote 1 Y",
         "Lote 2 Y",
+        "Asterisk Y",
     ]
 
     for col, header in enumerate(headers, start=1):
@@ -354,6 +394,7 @@ def build_workbook(chart_png: Path, path: Path) -> None:
             p["spec_max"] if p["spec_max"] is not None else "—",
             p["lote_1"] if p["lote_1"] is not None else "—",
             p["lote_2"] if p["lote_2"] is not None else "—",
+            p["asterisk"] if p["asterisk"] is not None else "—",
             within_spec(p["lote_1"], p["spec_min"], p["spec_max"]),
             within_spec(p["lote_2"], p["spec_min"], p["spec_max"]),
             p["spec_min"] if p["spec_min"] is not None else 0,
@@ -361,12 +402,13 @@ def build_workbook(chart_png: Path, path: Path) -> None:
             row_idx - 1,
             p["lote_1"],
             p["lote_2"],
+            p["asterisk"],
         ]
         for col, value in enumerate(values, start=1):
             cell = ws.cell(row_idx, col, value if value is not None else None)
             cell.alignment = center
             cell.border = thin
-            if col in (7, 8):
+            if col in (8, 9):
                 if value == "Pass":
                     cell.fill = PatternFill("solid", fgColor="C6EFCE")
                     cell.font = Font(color="006100")
@@ -377,11 +419,11 @@ def build_workbook(chart_png: Path, path: Path) -> None:
                     cell.fill = PatternFill("solid", fgColor="FFF2CC")
                     cell.font = Font(color="9C5700")
 
-    widths = [12, 16, 18, 18, 18, 18, 22, 22, 14, 14, 10, 12, 12]
+    widths = [12, 16, 18, 18, 18, 18, 18, 22, 22, 14, 14, 10, 12, 12, 12]
     for i, width in enumerate(widths, start=1):
         ws.column_dimensions[get_column_letter(i)].width = width
 
-    for col in range(9, 14):
+    for col in range(10, 16):
         ws.column_dimensions[get_column_letter(col)].hidden = True
 
     notes_row = last_data_row + 2
@@ -391,15 +433,16 @@ def build_workbook(chart_png: Path, path: Path) -> None:
         1,
         "Rango de aceptación shown as a shaded band. "
         "LA1/LA5/LA12 have no specification; LA1 has Lote 1 only. "
-        "X-axis shows product and belonging Laboratorio.",
+        "Valor teórico estimado (*): LA1/LA5 = 570; LA12 = 302.",
     )
     ws.cell(
         notes_row + 2,
         1,
-        "Units: mOsm/kg. Markers: Lote 1 (orange), Lote 2 (green).",
+        "Units: mOsm/kg. Markers: Lote 1 (orange), Lote 2 (green), "
+        "estrella = Valor teórico estimado.",
     )
-    ws.merge_cells(start_row=notes_row + 1, start_column=1, end_row=notes_row + 1, end_column=8)
-    ws.merge_cells(start_row=notes_row + 2, start_column=1, end_row=notes_row + 2, end_column=8)
+    ws.merge_cells(start_row=notes_row + 1, start_column=1, end_row=notes_row + 1, end_column=9)
+    ws.merge_cells(start_row=notes_row + 2, start_column=1, end_row=notes_row + 2, end_column=9)
 
     bar = BarChart()
     bar.type = "col"
@@ -416,7 +459,7 @@ def build_workbook(chart_png: Path, path: Path) -> None:
     bar.height = 12
 
     cats = Reference(ws, min_col=1, min_row=2, max_row=last_data_row)
-    data_bar = Reference(ws, min_col=9, min_row=1, max_col=10, max_row=last_data_row)
+    data_bar = Reference(ws, min_col=10, min_row=1, max_col=11, max_row=last_data_row)
     bar.add_data(data_bar, titles_from_data=True)
     bar.set_categories(cats)
 
@@ -431,9 +474,10 @@ def build_workbook(chart_png: Path, path: Path) -> None:
     scatter = ScatterChart()
     scatter.style = 10
 
-    xvalues = Reference(ws, min_col=11, min_row=2, max_row=last_data_row)
-    y1_vals = Reference(ws, min_col=12, min_row=2, max_row=last_data_row)
-    y2_vals = Reference(ws, min_col=13, min_row=2, max_row=last_data_row)
+    xvalues = Reference(ws, min_col=12, min_row=2, max_row=last_data_row)
+    y1_vals = Reference(ws, min_col=13, min_row=2, max_row=last_data_row)
+    y2_vals = Reference(ws, min_col=14, min_row=2, max_row=last_data_row)
+    ya_vals = Reference(ws, min_col=15, min_row=2, max_row=last_data_row)
 
     ser1 = Series(y1_vals, xvalues, title="Lote 1")
     ser1.marker = Marker(symbol="circle", size=7)
@@ -449,6 +493,13 @@ def build_workbook(chart_png: Path, path: Path) -> None:
     ser2.graphicalProperties.line.noFill = True
     scatter.series.append(ser2)
 
+    ser_a = Series(ya_vals, xvalues, title="Valor teórico estimado")
+    ser_a.marker = Marker(symbol="star", size=10)
+    ser_a.marker.graphicalProperties.solidFill = "000000"
+    ser_a.marker.graphicalProperties.line.solidFill = "000000"
+    ser_a.graphicalProperties.line.noFill = True
+    scatter.series.append(ser_a)
+
     bar.y_axis.majorGridlines.spPr = None
     bar += scatter
     ws.add_chart(bar, f"A{notes_row + 4}")
@@ -458,7 +509,8 @@ def build_workbook(chart_png: Path, path: Path) -> None:
     ws_chart["A1"].font = Font(bold=True, size=14, color="1F4E79")
     ws_chart["A2"] = (
         "Eje X: Producto (LA1–LA12) + Laboratorio | Eje Y: Osmolalidad (mOsm/kg), paso 25 | "
-        "Sombra: Rango de aceptación | Círculos: Lote 1 & Lote 2"
+        "Sombra: Rango de aceptación | Círculos: Lote 1 & Lote 2 | "
+        "Estrella: Valor teórico estimado"
     )
     ws_chart.merge_cells("A2:H2")
     ws_chart.column_dimensions["A"].width = 20
