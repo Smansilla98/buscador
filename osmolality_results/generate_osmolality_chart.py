@@ -484,7 +484,8 @@ def build_workbook(chart_png: Path, path: Path) -> None:
     ws_chart["A1"].font = Font(bold=True, size=14, color="1F4E79")
     ws_chart["A2"] = (
         "Eje X: Producto (DO1–DO9) + Laboratorio | Eje Y: Osmolalidad (mOsm/kg), paso 25 | "
-        "Sombra: Rango de aceptación | Círculos: Lote 1 & Lote 2 | *: valores adicionales"
+        "Sombra: Rango de aceptación | Círculos: Lote 1 & Lote 2 | "
+        "Estrella: Valor teórico estimado"
     )
     ws_chart.merge_cells("A2:H2")
     ws_chart.column_dimensions["A"].width = 20
