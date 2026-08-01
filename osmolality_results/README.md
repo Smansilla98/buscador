@@ -18,8 +18,9 @@ Archivos en `osmolality_results/`:
 - **Banda azul:** Rango de aceptación
 - **Círculos naranjas / verdes:** Lote 1 / Lote 2
 - Productos sin especificación: solo se muestran las mediciones
-- Serie DO: eje Y 200–620; DO8 sin especificación
-- Serie DO: debajo de cada producto se indica el Laboratorio (B, E–J; DO4–DO5 = G)
+- Serie DO: eje Y 200–620; DO8/DO9 sin especificación
+- Serie DO: debajo de cada producto se indica el Laboratorio (B, E–J, K; DO4–DO5 = G)
+- Serie DO: marcadores `*` en DO8 (574) y DO9 (288)
 - Serie LA: eje Y 150–625; LA1/LA5/LA12 sin especificación; LA1 sin Lote 2
 - Serie LA: debajo de cada producto se indica el Laboratorio (A–J)
 

@@ -17,6 +17,10 @@ from openpyxl.utils import get_column_letter
 
 OUTPUT_DIR = Path(__file__).resolve().parent
 
+Y_MIN = 200
+Y_MAX = 620
+Y_STEP = 25
+
 PRODUCTS = [
     {
         "product": "DO1",
@@ -25,6 +29,7 @@ PRODUCTS = [
         "spec_max": 320,
         "sample_1": 282,
         "sample_2": 280,
+        "asterisk": None,
     },
     {
         "product": "DO2",
@@ -33,6 +38,7 @@ PRODUCTS = [
         "spec_max": 340,
         "sample_1": 286,
         "sample_2": 283,
+        "asterisk": None,
     },
     {
         "product": "DO3",
@@ -41,6 +47,7 @@ PRODUCTS = [
         "spec_max": 350,
         "sample_1": 280,
         "sample_2": 281,
+        "asterisk": None,
     },
     {
         "product": "DO4",
@@ -49,6 +56,7 @@ PRODUCTS = [
         "spec_max": 320,
         "sample_1": 281,
         "sample_2": 276,
+        "asterisk": None,
     },
     {
         "product": "DO5",
@@ -57,6 +65,7 @@ PRODUCTS = [
         "spec_max": 320,
         "sample_1": 276,
         "sample_2": 275,
+        "asterisk": None,
     },
     {
         "product": "DO6",
@@ -65,6 +74,7 @@ PRODUCTS = [
         "spec_max": 370,
         "sample_1": 287,
         "sample_2": 280,
+        "asterisk": None,
     },
     {
         "product": "DO7",
@@ -73,6 +83,7 @@ PRODUCTS = [
         "spec_max": 330,
         "sample_1": 310,
         "sample_2": 312,
+        "asterisk": None,
     },
     {
         "product": "DO8",
@@ -81,16 +92,26 @@ PRODUCTS = [
         "spec_max": None,
         "sample_1": 573,
         "sample_2": 579,
+        "asterisk": 574,
+    },
+    {
+        "product": "DO9",
+        "laboratorio": "Laboratorio K",
+        "spec_min": None,
+        "spec_max": None,
+        "sample_1": None,
+        "sample_2": None,
+        "asterisk": 288,
     },
 ]
 
 
 def build_chart_png(path: Path) -> None:
-    """Excel-like chart: shaded spec ranges + circular sample markers."""
+    """Excel-like chart: shaded spec ranges + circular lote markers + asterisks."""
     products = [p["product"] for p in PRODUCTS]
     x = np.arange(len(products))
 
-    fig, ax = plt.subplots(figsize=(12, 8.0), dpi=160)
+    fig, ax = plt.subplots(figsize=(13, 8.0), dpi=160)
     fig.patch.set_facecolor("#FFFFFF")
     ax.set_facecolor("#FFFFFF")
 
@@ -111,12 +132,24 @@ def build_chart_png(path: Path) -> None:
             zorder=1,
         )
 
-    s1 = [p["sample_1"] for p in PRODUCTS]
-    s2 = [p["sample_2"] for p in PRODUCTS]
     offset = 0.08
+    x1, y1 = [], []
+    x2, y2 = [], []
+    xa, ya = [], []
+    for i, p in enumerate(PRODUCTS):
+        if p["sample_1"] is not None:
+            x1.append(i - offset)
+            y1.append(p["sample_1"])
+        if p["sample_2"] is not None:
+            x2.append(i + offset)
+            y2.append(p["sample_2"])
+        if p["asterisk"] is not None:
+            xa.append(i)
+            ya.append(p["asterisk"])
+
     ax.scatter(
-        x - offset,
-        s1,
+        x1,
+        y1,
         s=55,
         facecolors="#ED7D31",
         edgecolors="#C55A11",
@@ -125,8 +158,8 @@ def build_chart_png(path: Path) -> None:
         label="Lote 1",
     )
     ax.scatter(
-        x + offset,
-        s2,
+        x2,
+        y2,
         s=55,
         facecolors="#70AD47",
         edgecolors="#548235",
@@ -134,13 +167,24 @@ def build_chart_png(path: Path) -> None:
         zorder=3,
         label="Lote 2",
     )
+    ax.scatter(
+        xa,
+        ya,
+        s=120,
+        marker="*",
+        facecolors="#000000",
+        edgecolors="#000000",
+        linewidths=0.4,
+        zorder=4,
+        label="*",
+    )
 
     ax.set_axisbelow(True)
     ax.yaxis.grid(True, which="major", color="#D9D9D9", linestyle="-", linewidth=0.8)
     ax.xaxis.grid(True, which="major", color="#F2F2F2", linestyle="-", linewidth=0.6)
     ax.set_xlim(-0.6, len(products) - 0.4)
-    ax.set_ylim(200, 620)
-    ax.set_yticks(np.arange(200, 621, 25))
+    ax.set_ylim(Y_MIN, Y_MAX)
+    ax.set_yticks(np.arange(Y_MIN, Y_MAX + 1, Y_STEP))
     ax.set_xticks(x)
     ax.set_xticklabels(products, fontsize=11)
     ax.set_ylabel("Osmolalidad (mOsm/kg)", fontsize=11)
@@ -228,6 +272,16 @@ def build_chart_png(path: Path) -> None:
             markersize=8,
             label="Lote 2",
         ),
+        Line2D(
+            [0],
+            [0],
+            marker="*",
+            color="w",
+            markerfacecolor="#000000",
+            markeredgecolor="#000000",
+            markersize=12,
+            label="*",
+        ),
     ]
     ax.legend(handles=legend_handles, loc="upper left", frameon=True, fancybox=False)
 
@@ -236,7 +290,9 @@ def build_chart_png(path: Path) -> None:
     plt.close(fig)
 
 
-def within_spec(value: float, lo, hi) -> str:
+def within_spec(value, lo, hi) -> str:
+    if value is None:
+        return "N/A (sin lote)"
     if lo is None or hi is None:
         return "N/A (no specification)"
     return "Pass" if lo <= value <= hi else "Out of range"
@@ -244,26 +300,27 @@ def within_spec(value: float, lo, hi) -> str:
 
 def build_workbook(chart_png: Path, path: Path) -> None:
     wb = Workbook()
+    n = len(PRODUCTS)
+    last_data_row = 1 + n
 
-    # ---- Summary ----
     ws_sum = wb.active
     ws_sum.title = "Summary"
     ws_sum["A1"] = "Osmolality Test — Summary"
     ws_sum["A1"].font = Font(bold=True, size=16, color="1F4E79")
     ws_sum["A3"] = (
-        "All products with a specification range are within limits for both samples."
+        "All products with a specification range are within limits for both lots."
     )
     ws_sum["A4"] = (
-        "DO8 has no specification range; measured values are ~573–579 mOsm/kg."
+        "DO8 has no specification (lotes ~573–579; asterisk at 574). "
+        "DO9 (Laboratorio K) has asterisk-only value at 288 mOsm/kg."
     )
     ws_sum["A6"] = "Contents"
     ws_sum["A6"].font = Font(bold=True)
     ws_sum["A7"] = "• Sheet 'Data': raw results + native Excel combo chart"
     ws_sum["A8"] = "• Sheet 'Chart': high-resolution Excel-style chart image"
     ws_sum["A9"] = "• Companion PNG file for presentations / reports"
-    ws_sum.column_dimensions["A"].width = 90
+    ws_sum.column_dimensions["A"].width = 95
 
-    # ---- Data ----
     ws = wb.create_sheet("Data")
     header_fill = PatternFill("solid", fgColor="1F4E79")
     header_font = Font(color="FFFFFF", bold=True)
@@ -282,6 +339,7 @@ def build_workbook(chart_png: Path, path: Path) -> None:
         "Spec Max (mOsm/kg)",
         "Lote 1 (mOsm/kg)",
         "Lote 2 (mOsm/kg)",
+        "Asterisk (mOsm/kg)",
         "Lote 1 Status",
         "Lote 2 Status",
         "Base (hidden)",
@@ -289,6 +347,7 @@ def build_workbook(chart_png: Path, path: Path) -> None:
         "X Index",
         "Lote 1 Y",
         "Lote 2 Y",
+        "Asterisk Y",
     ]
 
     for col, header in enumerate(headers, start=1):
@@ -304,8 +363,9 @@ def build_workbook(chart_png: Path, path: Path) -> None:
             p["laboratorio"],
             p["spec_min"] if p["spec_min"] is not None else "—",
             p["spec_max"] if p["spec_max"] is not None else "—",
-            p["sample_1"],
-            p["sample_2"],
+            p["sample_1"] if p["sample_1"] is not None else "—",
+            p["sample_2"] if p["sample_2"] is not None else "—",
+            p["asterisk"] if p["asterisk"] is not None else "—",
             within_spec(p["sample_1"], p["spec_min"], p["spec_max"]),
             within_spec(p["sample_2"], p["spec_min"], p["spec_max"]),
             p["spec_min"] if p["spec_min"] is not None else 0,
@@ -313,12 +373,13 @@ def build_workbook(chart_png: Path, path: Path) -> None:
             row_idx - 1,
             p["sample_1"],
             p["sample_2"],
+            p["asterisk"],
         ]
         for col, value in enumerate(values, start=1):
-            cell = ws.cell(row_idx, col, value)
+            cell = ws.cell(row_idx, col, value if value is not None else None)
             cell.alignment = center
             cell.border = thin
-            if col in (7, 8):
+            if col in (8, 9):
                 if value == "Pass":
                     cell.fill = PatternFill("solid", fgColor="C6EFCE")
                     cell.font = Font(color="006100")
@@ -329,25 +390,34 @@ def build_workbook(chart_png: Path, path: Path) -> None:
                     cell.fill = PatternFill("solid", fgColor="FFF2CC")
                     cell.font = Font(color="9C5700")
 
-    widths = [12, 16, 18, 18, 18, 18, 22, 22, 14, 14, 10, 12, 12]
+    widths = [12, 16, 18, 18, 18, 18, 18, 22, 22, 14, 14, 10, 12, 12, 12]
     for i, width in enumerate(widths, start=1):
         ws.column_dimensions[get_column_letter(i)].width = width
 
-    for col in range(9, 14):
+    for col in range(10, 16):
         ws.column_dimensions[get_column_letter(col)].hidden = True
 
-    ws["A11"] = "Notes"
-    ws["A11"].font = Font(bold=True, color="1F4E79")
-    ws["A12"] = (
+    notes_row = last_data_row + 2
+    ws.cell(notes_row, 1, "Notes").font = Font(bold=True, color="1F4E79")
+    ws.cell(
+        notes_row + 1,
+        1,
         "Rango de aceptación shown as a shaded band. "
-        "DO8 has no specification; only lote markers are displayed. "
-        "X-axis shows product and belonging Laboratorio."
+        "Asterisk (*) markers: DO8 = 574, DO9 = 288. "
+        "X-axis shows product and belonging Laboratorio.",
     )
-    ws["A13"] = "Units: mOsm/kg. Markers: Lote 1 (orange), Lote 2 (green)."
-    ws.merge_cells("A12:H12")
-    ws.merge_cells("A13:H13")
+    ws.cell(
+        notes_row + 2,
+        1,
+        "Units: mOsm/kg. Markers: Lote 1 (orange), Lote 2 (green), * (black star).",
+    )
+    ws.merge_cells(
+        start_row=notes_row + 1, start_column=1, end_row=notes_row + 1, end_column=9
+    )
+    ws.merge_cells(
+        start_row=notes_row + 2, start_column=1, end_row=notes_row + 2, end_column=9
+    )
 
-    # Floating stacked columns for specification shade
     bar = BarChart()
     bar.type = "col"
     bar.grouping = "stacked"
@@ -355,35 +425,33 @@ def build_workbook(chart_png: Path, path: Path) -> None:
     bar.title = "Osmolality Test Results by Product"
     bar.y_axis.title = "Osmolalidad (mOsm/kg)"
     bar.x_axis.title = "Laboratorio/Producto"
-    bar.y_axis.scaling.min = 200
-    bar.y_axis.scaling.max = 620
-    bar.y_axis.majorUnit = 25
+    bar.y_axis.scaling.min = Y_MIN
+    bar.y_axis.scaling.max = Y_MAX
+    bar.y_axis.majorUnit = Y_STEP
     bar.style = 10
-    bar.width = 18
+    bar.width = 20
     bar.height = 12
 
-    cats = Reference(ws, min_col=1, min_row=2, max_row=9)
-    data_bar = Reference(ws, min_col=9, min_row=1, max_col=10, max_row=9)
+    cats = Reference(ws, min_col=1, min_row=2, max_row=last_data_row)
+    data_bar = Reference(ws, min_col=10, min_row=1, max_col=11, max_row=last_data_row)
     bar.add_data(data_bar, titles_from_data=True)
     bar.set_categories(cats)
 
-    # Invisible base series
     bar.series[0].graphicalProperties.noFill = True
     bar.series[0].graphicalProperties.line.noFill = True
     bar.series[0].title = SeriesLabel(v=" ")
 
-    # Visible range shade
     bar.series[1].graphicalProperties.solidFill = "9DC3E6"
     bar.series[1].graphicalProperties.line.solidFill = "5B9BD5"
     bar.series[1].title = SeriesLabel(v="Rango de aceptación")
 
-    # Scatter markers for both lots
     scatter = ScatterChart()
     scatter.style = 10
 
-    xvalues = Reference(ws, min_col=11, min_row=2, max_row=9)
-    y1_vals = Reference(ws, min_col=12, min_row=2, max_row=9)
-    y2_vals = Reference(ws, min_col=13, min_row=2, max_row=9)
+    xvalues = Reference(ws, min_col=12, min_row=2, max_row=last_data_row)
+    y1_vals = Reference(ws, min_col=13, min_row=2, max_row=last_data_row)
+    y2_vals = Reference(ws, min_col=14, min_row=2, max_row=last_data_row)
+    ya_vals = Reference(ws, min_col=15, min_row=2, max_row=last_data_row)
 
     ser1 = Series(y1_vals, xvalues, title="Lote 1")
     ser1.marker = Marker(symbol="circle", size=7)
@@ -399,25 +467,31 @@ def build_workbook(chart_png: Path, path: Path) -> None:
     ser2.graphicalProperties.line.noFill = True
     scatter.series.append(ser2)
 
-    bar.y_axis.majorGridlines.spPr = None  # keep default gridlines
-    bar += scatter
-    ws.add_chart(bar, "A15")
+    ser_a = Series(ya_vals, xvalues, title="*")
+    ser_a.marker = Marker(symbol="star", size=10)
+    ser_a.marker.graphicalProperties.solidFill = "000000"
+    ser_a.marker.graphicalProperties.line.solidFill = "000000"
+    ser_a.graphicalProperties.line.noFill = True
+    scatter.series.append(ser_a)
 
-    # ---- Chart image sheet ----
+    bar.y_axis.majorGridlines.spPr = None
+    bar += scatter
+    ws.add_chart(bar, f"A{notes_row + 4}")
+
     ws_chart = wb.create_sheet("Chart")
     ws_chart["A1"] = "Osmolality Test Results — Excel-style chart"
     ws_chart["A1"].font = Font(bold=True, size=14, color="1F4E79")
     ws_chart["A2"] = (
-        "Eje X: Producto (DO1–DO8) + Laboratorio | Eje Y: Osmolalidad (mOsm/kg), paso 25 | "
-        "Sombra: Rango de aceptación | Círculos: Lote 1 & Lote 2"
+        "Eje X: Producto (DO1–DO9) + Laboratorio | Eje Y: Osmolalidad (mOsm/kg), paso 25 | "
+        "Sombra: Rango de aceptación | Círculos: Lote 1 & Lote 2 | *: valores adicionales"
     )
     ws_chart.merge_cells("A2:H2")
     ws_chart.column_dimensions["A"].width = 20
 
     if chart_png.exists():
         img = XLImage(str(chart_png))
-        img.width = 960
-        img.height = 560
+        img.width = 1020
+        img.height = 580
         ws_chart.add_image(img, "A4")
 
     wb.save(path)
