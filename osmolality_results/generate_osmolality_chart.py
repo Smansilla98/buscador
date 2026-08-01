@@ -180,9 +180,10 @@ def build_chart_png(path: Path) -> None:
     )
     ax.axhline(
         y=300,
-        color="#000080",
+        color="#5B7C99",
         linestyle="--",
-        linewidth=1.4,
+        linewidth=1.0,
+        alpha=0.55,
         zorder=2,
         label="Lágrima natural",
     )
@@ -293,9 +294,10 @@ def build_chart_png(path: Path) -> None:
         Line2D(
             [0],
             [0],
-            color="#000080",
+            color="#5B7C99",
             linestyle="--",
-            linewidth=1.6,
+            linewidth=1.1,
+            alpha=0.55,
             label="Lágrima natural",
         ),
     ]
