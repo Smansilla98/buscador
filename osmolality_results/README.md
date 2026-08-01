@@ -24,6 +24,7 @@ Archivos en `osmolality_results/`:
 - Serie LA: eje Y 150–625; LA1/LA5/LA12 sin especificación; LA1 sin Lote 2
 - Serie LA: debajo de cada producto se indica el Laboratorio (A–J)
 - Serie LA: estrella = Valor teórico estimado (LA1/LA5 = 570; LA12 = 302)
+- Ambos gráficos: línea punteada azul marino a 300 mOsm/kg = **Lágrima natural**
 
 ## Regenerar
 

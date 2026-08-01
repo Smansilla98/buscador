@@ -178,6 +178,14 @@ def build_chart_png(path: Path) -> None:
         zorder=4,
         label="Valor teórico estimado",
     )
+    ax.axhline(
+        y=300,
+        color="#000080",
+        linestyle="--",
+        linewidth=1.4,
+        zorder=2,
+        label="Lágrima natural",
+    )
 
     ax.set_axisbelow(True)
     ax.yaxis.grid(True, which="major", color="#D9D9D9", linestyle="-", linewidth=0.8)
@@ -281,6 +289,14 @@ def build_chart_png(path: Path) -> None:
             markeredgecolor="#000000",
             markersize=12,
             label="Valor teórico estimado",
+        ),
+        Line2D(
+            [0],
+            [0],
+            color="#000080",
+            linestyle="--",
+            linewidth=1.6,
+            label="Lágrima natural",
         ),
     ]
     ax.legend(handles=legend_handles, loc="upper left", frameon=True, fancybox=False)
@@ -410,7 +426,7 @@ def build_workbook(chart_png: Path, path: Path) -> None:
         notes_row + 2,
         1,
         "Units: mOsm/kg. Markers: Lote 1 (orange), Lote 2 (green), "
-        "estrella = Valor teórico estimado.",
+        "estrella = Valor teórico estimado; línea punteada azul marino = Lágrima natural (300).",
     )
     ws.merge_cells(
         start_row=notes_row + 1, start_column=1, end_row=notes_row + 1, end_column=9
@@ -485,7 +501,7 @@ def build_workbook(chart_png: Path, path: Path) -> None:
     ws_chart["A2"] = (
         "Eje X: Producto (DO1–DO9) + Laboratorio | Eje Y: Osmolalidad (mOsm/kg), paso 25 | "
         "Sombra: Rango de aceptación | Círculos: Lote 1 & Lote 2 | "
-        "Estrella: Valor teórico estimado"
+        "Estrella: Valor teórico estimado | Línea punteada: Lágrima natural (300)"
     )
     ws_chart.merge_cells("A2:H2")
     ws_chart.column_dimensions["A"].width = 20
