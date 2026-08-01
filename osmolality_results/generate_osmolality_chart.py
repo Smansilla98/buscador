@@ -176,7 +176,7 @@ def build_chart_png(path: Path) -> None:
         edgecolors="#000000",
         linewidths=0.4,
         zorder=4,
-        label="*",
+        label="Valor teórico estimado",
     )
 
     ax.set_axisbelow(True)
@@ -280,7 +280,7 @@ def build_chart_png(path: Path) -> None:
             markerfacecolor="#000000",
             markeredgecolor="#000000",
             markersize=12,
-            label="*",
+            label="Valor teórico estimado",
         ),
     ]
     ax.legend(handles=legend_handles, loc="upper left", frameon=True, fancybox=False)
@@ -409,7 +409,8 @@ def build_workbook(chart_png: Path, path: Path) -> None:
     ws.cell(
         notes_row + 2,
         1,
-        "Units: mOsm/kg. Markers: Lote 1 (orange), Lote 2 (green), * (black star).",
+        "Units: mOsm/kg. Markers: Lote 1 (orange), Lote 2 (green), "
+        "estrella = Valor teórico estimado.",
     )
     ws.merge_cells(
         start_row=notes_row + 1, start_column=1, end_row=notes_row + 1, end_column=9
@@ -467,7 +468,7 @@ def build_workbook(chart_png: Path, path: Path) -> None:
     ser2.graphicalProperties.line.noFill = True
     scatter.series.append(ser2)
 
-    ser_a = Series(ya_vals, xvalues, title="*")
+    ser_a = Series(ya_vals, xvalues, title="Valor teórico estimado")
     ser_a.marker = Marker(symbol="star", size=10)
     ser_a.marker.graphicalProperties.solidFill = "000000"
     ser_a.marker.graphicalProperties.line.solidFill = "000000"
